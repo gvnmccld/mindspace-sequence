@@ -11,6 +11,7 @@
     3. Set the percentage correct score using the LMS API
     4. If the percentage correct is > 80%, mark the lesson complete, else, incomplete using the same API.
 4. If all are correct, dim the placeholders 50% and play the video in the video area.
+5. Do not rely on jQuery.
 
 ## Demo Application
 
@@ -27,3 +28,5 @@ http://cannon.pw/sequence
 
 1. Depending on client needs, resize images to make them fit the page better.
 2. Implement LMS API (progress saving, time taken to complete, lesson status, etc.)
+3. Adjust display in specific resolutions that will be used.
+4. Utilize underscore.js or lodash.js to make the JS easier to read and cleaner

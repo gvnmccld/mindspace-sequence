@@ -1,7 +1,7 @@
 /* Store the images for display and tracking purposes
    This could be obfuscated more depending on requirements
    It is randomized below */
-var draggableItems = [
+var draggableItems = shuffle([
   { id: 0,
     src: "/sequence/images/lemon_step_1_master.jpg",
     anim: "/sequence/images/lemon_step_1_master.gif",
@@ -37,7 +37,7 @@ var draggableItems = [
     anim: "/sequence/images/lemon_step_7_master.gif",
     order: 7,
     curr: 0 }
-];
+]);
 
 var drops = document.getElementById("dropPoints").getElementsByTagName('div');
 
@@ -45,26 +45,24 @@ window.onload = function() {
   var container = document.getElementById("shuffled-images");
   var images = container.getElementsByTagName('img');
 
-  // Get a shuffled list of video ids
-  var shuffArr = shuffle(draggableItems.map(function(obj){return obj.id;}));
-  
   // Initial image loading from object
   // Use the shuffled list to iterate through the video list
-  for(var i = 0; i < shuffArr.length; i++) {
+  for(var i = 0; i < draggableItems.length; i++) {
     var newId = Math.floor(Math.random()*90000) + 10000,
         myImg = document.createElement("img");
     
     // Set some attributes on the images so we can find them easily later    
-    myImg.setAttribute('src', draggableItems[shuffArr[i]].src);
+    myImg.setAttribute('src', draggableItems[i].src);
     myImg.setAttribute('data-img_id', newId);
     myImg.setAttribute('id', 'image-'+newId);
     
     // Update the video object with our random ids for refrence
-    draggableItems[shuffArr[i]].id = newId
-    draggableItems[shuffArr[i]].id = newId;
+    draggableItems[i].id = newId
+    draggableItems[i].id = newId;
     
     // Render the images to the page in our shuffled order
-    container.appendChild(myImg);  
+    container.appendChild(myImg);
+      
   }
   
   // Setup "animation" of images based on mouseover/mouseout 
@@ -215,27 +213,42 @@ function verifyOrder() {
            el.parentElement.className = "incorrect";
         }
         
-          // Once all of the clips are in the correct order, play the video
-        if(correctCount == totalItems) {
+        // Once all of the clips are in the correct order, play the video
+        if(correctCount === totalItems) {
           document.getElementById('lemonVideo').play();
+          LMS.pauseTime();
+          var timeTaken = LMS.time();
           for(var i = 0; i < drops.length; i++){
             drops[i].className += " dim";
             drops[i].firstChild.setAttribute('draggable', false);
           }
           messages.className = successClass;
-          messages.innerHTML = "Congratulations, you have passed this lesson!";
-          
+          messages.innerHTML = "Congratulations, you have passed this lesson! Total Time: " + timeTaken + " seconds.";
+                    
         } else {
           messages.className = errorClass;
           messages.innerHTML = "You have " + correctCount + " out of " + totalItems + " clips correct! Keep Trying!"; 
-        } 
-  
-       
+        }
       } 
+      updateLMS(correctCount);   
   } else {
      // If there are empty placeholders, we clear all of the correct/incorrect highlighting
      for(var i = 0; i < drops.length; i++){
       drops[i].className = "";
      }
-  }                       
+  } 
+  return correctCount;                      
+}
+
+function updateLMS(correctCount) {
+    // Use the LMS API to update the score
+     var newScore = parseInt(correctCount/draggableItems.length * 100);
+     var prevScore = LMS.score();
+     if(newScore > prevScore){
+        // Set score to new score, user improved
+        LMS.setScore(newScore);
+      } 
+     if(newScore > 80 && LMS.lessonStatus !== 'complete') {
+        LMS.lessonStatus('complete');
+     } 
 }
