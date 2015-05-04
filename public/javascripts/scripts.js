@@ -195,7 +195,9 @@ function shuffle(array) {
 function verifyOrder() {
       var movedCount = document.getElementById("dropPoints").getElementsByTagName("img").length,
       totalItems = draggableItems.length,
-      correctCount = 0;
+      correctCount = 0,
+      errorClass = "alert alert-danger col-sm-12 col-md-8 col-lg-5",
+      successClass = "alert alert-success col-sm-12 col-md-8 col-lg-5";
   
   // If all of the images have been moved to the dropzones 
   if(movedCount === totalItems){
@@ -220,11 +222,11 @@ function verifyOrder() {
             drops[i].className += " dim";
             drops[i].firstChild.setAttribute('draggable', false);
           }
-          messages.className = "alert alert-success";
+          messages.className = successClass;
           messages.innerHTML = "Congratulations, you have passed this lesson!";
           
         } else {
-          messages.className = "alert alert-danger";
+          messages.className = errorClass;
           messages.innerHTML = "You have " + correctCount + " out of " + totalItems + " clips correct! Keep Trying!"; 
         } 
   
