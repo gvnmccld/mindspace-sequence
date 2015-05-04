@@ -1,3 +1,6 @@
+/* Store the images for display and tracking purposes
+   This could be obfuscated more depending on requirements
+   It is randomized below */
 var draggableItems = [
   { id: 0,
     src: "/sequence/images/lemon_step_1_master.jpg",
@@ -35,18 +38,32 @@ var draggableItems = [
     order: 7,
     curr: 0 }
 ];
+
 var drops = document.getElementById("dropPoints").getElementsByTagName('div');
+
 window.onload = function() {
   var container = document.getElementById("shuffled-images");
   var images = container.getElementsByTagName('img');
-  
+
+  // Get a shuffled list of video ids
+  var shuffArr = shuffle(draggableItems.map(function(obj){return obj.id;}));
   
   // Initial image loading from object
-  for(var i = 0; i < draggableItems.length; i++) {
-    var myImg = document.createElement("img");
-    myImg.setAttribute('src', draggableItems[i].src);
-    myImg.setAttribute('data-img_id', draggableItems[i].id);
-    myImg.setAttribute('id', 'image-'+draggableItems[i].id);
+  // Use the shuffled list to iterate through the video list
+  for(var i = 0; i < shuffArr.length; i++) {
+    var newId = Math.floor(Math.random()*90000) + 10000,
+        myImg = document.createElement("img");
+    
+    // Set some attributes on the images so we can find them easily later    
+    myImg.setAttribute('src', draggableItems[shuffArr[i]].src);
+    myImg.setAttribute('data-img_id', newId);
+    myImg.setAttribute('id', 'image-'+newId);
+    
+    // Update the video object with our random ids for refrence
+    draggableItems[shuffArr[i]].id = newId
+    draggableItems[shuffArr[i]].id = newId;
+    
+    // Render the images to the page in our shuffled order
     container.appendChild(myImg);  
   }
   
@@ -55,18 +72,21 @@ window.onload = function() {
       images[i].addEventListener("mouseover", function (evt) {
         // if the images are dimmed, don't animate anymore
         if(!hasClass(this.parentElement, "dim")){
-          var imgId = this.dataset.img_id,
-            image = document.getElementById("image-"+imgId);
-          this.src = draggableItems[imgId].anim;
+          var imgId = parseInt(this.dataset.img_id),                        
+            image = document.getElementById("image-"+imgId),
+            dragItem = findVideoById(imgId);
+            
+          this.src = dragItem.anim;
         }
         
       });
       images[i].addEventListener("mouseout", function () {
         // if the images are dimmed, don't animate anymore
         if(!hasClass(this.parentElement, "dim")){
-          var imgId = this.dataset.img_id,
-              image = document.getElementById("image-"+imgId);
-          this.src = draggableItems[imgId].src;
+          var imgId = parseInt(this.dataset.img_id),
+              image = document.getElementById("image-"+imgId)
+              dragItem = findVideoById(imgId);
+          this.src = dragItem.src;
         }
       });
       images[i].removeEventListener("mouseout");
@@ -99,48 +119,79 @@ function hasClass(el, selector) {
    }
 }
 
+// Our main on-drag event
 function drag(ev) {
     var el = document.getElementById(ev.target.id); 
-    ev.dataTransfer.setData("source", ev.target.id);
+    ev.dataTransfer.setData("htmlImageId", ev.target.id);
     ev.dataTransfer.setData("previous", ev.target.parentElement.dataset.position || "");
-    el.src = draggableItems[el.dataset.img_id].src;    
+    dragItem = findVideoById(el.dataset.img_id);
+    
+    el.src = dragItem.src;    
 }
 
+// Our main on-drop event
 function drop(ev) {
     ev.preventDefault();
-    var data = ev.dataTransfer.getData("source");
-    var el = document.getElementById(data);
-    var prevEl = parseInt(ev.dataTransfer.getData("previous")); 
+    var htmlImageId = ev.dataTransfer.getData("htmlImageId");
+    var el = document.getElementById(htmlImageId);
+    var prevEl = parseInt(ev.dataTransfer.getData("previous"));
+    var targetItem = findVideoById(ev.target.dataset.img_id);
+    var currentItem = findVideoById(el.dataset.img_id); 
 
       // If the tag is an image, we're replacing or swapping images
       if(ev.target.tagName === "IMG") {
-      var start = document.getElementById("shuffled-images"),
-          pholder = ev.target.parentElement;
-      
-      // If prevEl is set, the new img came from another placeholder, swap the images 
-      if(prevEl) {
-        document.getElementById("drop-"+prevEl).appendChild(ev.target);
-        draggableItems[ev.target.dataset.img_id].curr = prevEl;
-        draggableItems[el.dataset.img_id].curr = parseInt(pholder.dataset.position);
-        pholder.appendChild(el);
-      } else {
-        start.appendChild(ev.target);
-        draggableItems[ev.target.dataset.img_id].curr = 0;
-        draggableItems[el.dataset.img_id].curr = parseInt(pholder.dataset.position);
-        pholder.appendChild(el);
-      }
- 
+        var start = document.getElementById("shuffled-images"),
+            pholder = ev.target.parentElement;
+        
+        // If prevEl is set, the new img came from another placeholder, swap the images 
+        if(prevEl) {
+          document.getElementById("drop-"+prevEl).appendChild(ev.target);
+          targetItem.curr = prevEl;
+          currentItem.curr = parseInt(pholder.dataset.position);
+          pholder.appendChild(el);
+        } else {
+          // Else we dragged it from the left side, just add it to the placeholder
+          start.appendChild(ev.target);
+          targetItem.curr = 0;
+          currentItem.curr = parseInt(pholder.dataset.position);
+          pholder.appendChild(el);
+        }
       
     } else {
         // There is not an image to replace, just add the image to the dropzone
         ev.target.appendChild(el);
-        draggableItems[el.dataset.img_id].curr = parseInt(ev.target.dataset.position);
+        var dragItem = findVideoById(el.dataset.img_id);
+        dragItem.curr = parseInt(ev.target.dataset.position);
     }
     
     // Check to see if the exercise is complete
     verifyOrder();
 }
+                
+// Find the rest of the data based on our randomized item.id
+function findVideoById(id) {
+  return draggableItems.filter(function(item){return item.id === parseInt(id)})[0];  
+}
 
+// Fisher-Yates Shuffle
+function shuffle(array) {
+  var m = array.length, t, i;
+
+  // While there remain elements to shuffle…
+  while (m) {
+
+    // Pick a remaining element…
+    i = Math.floor(Math.random() * m--);
+
+    // And swap it with the current element.
+    t = array[m];
+    array[m] = array[i];
+    array[i] = t;
+  }
+
+  return array;
+}
+             
 function verifyOrder() {
       var movedCount = document.getElementById("dropPoints").getElementsByTagName("img").length,
       totalItems = draggableItems.length,
@@ -151,29 +202,38 @@ function verifyOrder() {
     // Check to see if the images are in the correct location
     for(var i = 0; i < draggableItems.length; i++) {
       var item = draggableItems[i],
-          el = document.getElementById("image-" + draggableItems[i].id);
+          el = document.getElementById("image-" + draggableItems[i].id),
+          messages = document.getElementById("messages");
         
         // If the img is in the correct location, add a class and increment our correct count  
         if(draggableItems[i].order === draggableItems[i].curr) {
           el.parentElement.className = "correct";
           correctCount += 1;
         } else {
-          console.log('hit')
            el.parentElement.className = "incorrect";
         }
         
+          // Once all of the clips are in the correct order, play the video
+        if(correctCount == totalItems) {
+          document.getElementById('lemonVideo').play();
+          for(var i = 0; i < drops.length; i++){
+            drops[i].className += " dim";
+            drops[i].firstChild.setAttribute('draggable', false);
+          }
+          messages.className = "alert alert-success";
+          messages.innerHTML = "Congratulations, you have passed this lesson!";
+          
+        } else {
+          messages.className = "alert alert-danger";
+          messages.innerHTML = "You have " + correctCount + " out of " + totalItems + " clips correct! Keep Trying!"; 
+        } 
+  
+       
       } 
   } else {
-         for(var i = 0; i < drops.length; i++){
-          drops[i].className = "";
-         }
-      }
-      console.log(correctCount);
-  if(correctCount == totalItems) {
-    document.getElementById('lemonVideo').play();
-    for(var i = 0; i < drops.length; i++){
-        drops[i].className += " dim";
-        drops[i].firstChild.setAttribute('draggable', false);
-       }
-  }  
+     // If there are empty placeholders, we clear all of the correct/incorrect highlighting
+     for(var i = 0; i < drops.length; i++){
+      drops[i].className = "";
+     }
+  }                       
 }
