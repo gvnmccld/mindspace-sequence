@@ -18,4 +18,12 @@ http://cannon.pw/sequence
 
 ## Setup
 
+1. Clone repo
+2. Run: npm install
+3. modify bin/www with your port info (or set port env var)
+4. node bin/www
+
 ## Next Steps
+
+1. Depending on client needs, resize images to make them fit the page better.
+2. Implement LMS API (progress saving, time taken to complete, lesson status, etc.)
