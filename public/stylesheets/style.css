@@ -1,0 +1,53 @@
+body {
+  padding: 20px 30px;
+}
+
+a {
+  color: #00B7FF;
+}
+
+#dropPoints > div {
+  width: 209px;
+  height: 122px;
+  display: inline-block;
+  margin: 5px;
+  border: 4px dashed #c7c7c7;
+  background: #ffffff url("/sequence/images/drag_here.png") no-repeat center center;
+}
+
+img {
+  vertical-align: baseline;
+}
+
+#dropPoints > .correct {
+  border-color: green;
+}
+
+#dropPoints > .incorrect {
+  border-color: red;
+}
+
+#dropPoints > div.dim {
+  opacity: .5;
+  background-image: none;
+}
+
+#dropPoints > div.dim img {
+  cursor: default;
+}
+
+.animated-image {
+  display: none;
+}
+
+#shuffled-images img, #dropPoints img {
+  cursor: pointer;
+}
+#shuffled-images img {
+  margin: 3px 0;
+}
+
+#videoPlayer {
+  width: 640px;
+  height: 400px;
+}
