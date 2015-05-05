@@ -87,7 +87,6 @@ window.onload = function() {
           this.src = dragItem.src;
         }
       });
-      images[i].removeEventListener("mouseout");
   }
   
   // Dropzone events
@@ -119,9 +118,9 @@ function hasClass(el, selector) {
 
 // Our main on-drag event
 function drag(ev) {
-    var el = document.getElementById(ev.target.id); 
-    ev.dataTransfer.setData("htmlImageId", ev.target.id);
-    ev.dataTransfer.setData("previous", ev.target.parentElement.dataset.position || "");
+    var el = document.getElementById(ev.target.id);
+    // We have ot use the "text" setData property or IE blows up 
+    ev.dataTransfer.setData("text", ev.target.id + ',' + ev.target.parentElement.dataset.position);
     dragItem = findVideoById(el.dataset.img_id);
     
     el.src = dragItem.src;    
@@ -130,9 +129,10 @@ function drag(ev) {
 // Our main on-drop event
 function drop(ev) {
     ev.preventDefault();
-    var htmlImageId = ev.dataTransfer.getData("htmlImageId");
-    var el = document.getElementById(htmlImageId);
-    var prevEl = parseInt(ev.dataTransfer.getData("previous"));
+    var dropParams = ev.dataTransfer.getData("text").split(",");
+    var prevEl = parseInt(dropParams[1]) || undefined;
+    var el = document.getElementById(dropParams[0]);
+    
     var targetItem = findVideoById(ev.target.dataset.img_id);
     var currentItem = findVideoById(el.dataset.img_id); 
 
